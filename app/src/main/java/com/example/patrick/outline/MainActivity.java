@@ -69,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
         // ADD
         // Adds a new note and creates a new activity (blank text file once again)
         // If there is no text edited, nothing will happen (flashing of alerts = somewhat disturbing)
@@ -117,16 +115,15 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                final int position = viewHolder.getAdapterPosition();
-                noteAdapter.notifyItemRemoved(position);
+                int position = viewHolder.getAdapterPosition();
 
                 RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
                 TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
 
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
-                finish();
-                drawerLayout.openDrawer(Gravity.LEFT);
+
+                noteAdapter.notifyItemRemoved(Integer.parseInt(a.getText().toString()));
             }
 
             @Override
