@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if(etText.getText().toString().trim().length() > 0) {
+            Log.d("debug", "DESTROY");
             DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
 
             String noteText = etText.getText().toString();
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void onFinish() {
                 if(etText.getText().toString().trim().length() > 0) {
+                    Log.d("debug", "PAUSE");
                     DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
 
                     String noteText = etText.getText().toString();
@@ -138,8 +140,10 @@ public class MainActivity extends AppCompatActivity {
 
                     dbHelper.createNote(note);
 
-                    Intent i = new Intent(getBaseContext(), MainActivity.class);
-                    startActivity(i);
+                    etText.setText("");
+                    noteAdapter = new NoteAdapter(getBaseContext(), dbHelper.getAllNotes());
+                    rvNote.setAdapter(noteAdapter);
+                    rvNote.setLayoutManager(new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false));
                 }
             }
         });
@@ -174,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
 
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
+
 
                 noteAdapter.notifyItemRemoved(Integer.parseInt(a.getText().toString()));
             }
