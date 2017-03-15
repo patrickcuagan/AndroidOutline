@@ -1,5 +1,6 @@
 package com.example.patrick.outline;
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
     NoteAdapter noteAdapter;
     DatabaseHelper dbHelper;
 
+    CountDownTimer timer;
+    boolean isRunning = false;
+
     EditText etText;
     ImageButton ibSubmit, ibDrawer;
 
@@ -35,6 +39,54 @@ public class MainActivity extends AppCompatActivity {
             this.drawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(etText.getText().toString().trim().length() > 0) {
+            DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+
+            String noteText = etText.getText().toString();
+            Note note = new Note(noteText, getDateTime());
+
+            dbHelper.createNote(note);
+        }
+    }
+
+    // when the application is "minimized", it countdowns.. based on settings!!!!!
+    // and then save to db if ever the time passes
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        timer = new CountDownTimer(5000, 1000) {
+            public void onTick(long millisUntilFinished) {
+                isRunning = true;
+            }
+
+            public void onFinish() {
+                if(etText.getText().toString().trim().length() > 0) {
+                    DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+
+                    String noteText = etText.getText().toString();
+                    Note note = new Note(noteText, getDateTime());
+
+                    dbHelper.createNote(note);
+
+                    finish();
+                }
+            }
+        }.start();
+    }
+
+    // related to onPause --- once the application resumes, stop the timer and proceed as is
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(isRunning) {
+            timer.cancel();
         }
     }
 
@@ -144,8 +196,3 @@ public class MainActivity extends AppCompatActivity {
         return dateFormat.format(date);
     }
 }
-
-// Curent TODO
-// 1. date_created will change all the fucking time?????
-// 2. back press button should withdraw notificationview
-// 3. swiping right on the card should delete it
