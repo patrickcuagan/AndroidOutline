@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ public class NoteAdapter extends CursorRecyclerViewAdapter<NoteAdapter.NoteViewH
         String date = cursor.getString(cursor.getColumnIndex(Note.COLUMN_DATE));
         Note note = new Note(id, text, date);
 
+        viewHolder.tvId.setText(id + "");
         viewHolder.tvText.setText(text);
         viewHolder.tvDate.setText(note.getDate_created() + "");
 
@@ -53,11 +55,13 @@ public class NoteAdapter extends CursorRecyclerViewAdapter<NoteAdapter.NoteViewH
     public class NoteViewHolder extends RecyclerView.ViewHolder {
         TextView tvText;
         TextView tvDate;
+        TextView tvId;
         CardView container;
         public NoteViewHolder(View itemView) {
             super(itemView);
             tvText = (TextView) itemView.findViewById(R.id.tv_text);
             tvDate = (TextView) itemView.findViewById(R.id.tv_date);
+            tvId = (TextView) itemView.findViewById(R.id.tv_id);
             container = (CardView) itemView.findViewById(R.id.container);
         }
     }

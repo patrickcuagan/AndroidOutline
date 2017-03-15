@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     android:id="@+id/container">
 
-
     <RelativeLayout android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="10dp">
@@ -21,8 +20,15 @@
             android:id="@+id/tv_date"
             android:textSize="10sp"
             android:layout_below="@id/tv_text"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true">
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true">
+
+        </TextView>
+
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tv_id"
+            android:layout_below="@id/tv_text">
 
         </TextView>
     </RelativeLayout>

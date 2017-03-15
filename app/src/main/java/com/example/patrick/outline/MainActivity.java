@@ -1,12 +1,16 @@
 package com.example.patrick.outline;
 import android.content.Intent;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -24,6 +28,15 @@ public class MainActivity extends AppCompatActivity {
 
     EditText etText;
     ImageButton ibSubmit, ibDrawer;
+
+    @Override
+    public void onBackPressed() {
+        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +69,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
+        // ADD
         // Adds a new note and creates a new activity (blank text file once again)
         // If there is no text edited, nothing will happen (flashing of alerts = somewhat disturbing)
         etText = (EditText) findViewById(R.id.et_text);
@@ -78,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // EDIT
         // If there is an intent (one of the entered notes was clicked), display it
         if(getIntent().getExtras() != null) {
             int id = getIntent().getIntExtra(Note.COLUMN_ID, -1);
@@ -89,6 +106,37 @@ public class MainActivity extends AppCompatActivity {
                 etText.setText(note.getText());
             }
         }
+
+        // DELETE
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                final int position = viewHolder.getAdapterPosition();
+                noteAdapter.notifyItemRemoved(position);
+
+                RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
+                TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
+
+                DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+                dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
+                finish();
+                drawerLayout.openDrawer(Gravity.LEFT);
+            }
+
+            @Override
+            public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
+                super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(rvNote);
 
     }
 
