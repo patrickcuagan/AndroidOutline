@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     CountDownTimer timer;
     boolean isRunning = false;
+    boolean isCreated = false;
 
     EditText etText;
     ImageButton ibSubmit, ibDrawer;
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(etText.getText().toString().trim().length() > 0) {
+        if(etText.getText().toString().trim().length() > 0 && !isCreated) {
             Log.d("debug", "DESTROY");
             DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
 
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void onFinish() {
                 if(etText.getText().toString().trim().length() > 0) {
+                    isCreated = true;
                     Log.d("debug", "PAUSE");
                     DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
 
@@ -111,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        rvNote.setHasFixedSize(true);
         rvNote.setAdapter(noteAdapter);
         rvNote.setLayoutManager(new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false));
 
@@ -142,8 +145,16 @@ public class MainActivity extends AppCompatActivity {
 
                     etText.setText("");
                     noteAdapter = new NoteAdapter(getBaseContext(), dbHelper.getAllNotes());
+                    noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(int id) {
+                            Intent i = new Intent(getBaseContext(), MainActivity.class);
+                            i.putExtra(Note.COLUMN_ID, id);
+                            startActivity(i);
+                        }
+                    });
                     rvNote.setAdapter(noteAdapter);
-                    rvNote.setLayoutManager(new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false));
+
                 }
             }
         });
@@ -179,7 +190,6 @@ public class MainActivity extends AppCompatActivity {
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
 
-
                 noteAdapter.notifyItemRemoved(Integer.parseInt(a.getText().toString()));
             }
 
@@ -201,3 +211,7 @@ public class MainActivity extends AppCompatActivity {
         return dateFormat.format(date);
     }
 }
+
+// bugs:
+// 1. deleting does not animate properly
+// 2. select icon --> adds as new instead of edit
