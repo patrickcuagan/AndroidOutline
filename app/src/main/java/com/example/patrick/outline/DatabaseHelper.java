@@ -68,7 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rows;
     }
 
-    public int deleteNote(Note note) {
+    public int toggleDeleteNote(Note note) {
         SQLiteDatabase db = getWritableDatabase();
 
         ContentValues cv = new ContentValues();
@@ -91,12 +91,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getAllNotes() {
         SQLiteDatabase db = getReadableDatabase();
-        return db.query(Note.TABLE, null, Note.COLUMN_DELETED + " =?", new String[] { 0+"" }, null, null, null);
+        return db.query(Note.TABLE, null, Note.COLUMN_DELETED + " =?", new String[] { 0+"" }, null, null, Note.COLUMN_DATE +" DESC");
     }
 
     public Cursor getAllDeletedNotes() {
         SQLiteDatabase db = getReadableDatabase();
-        return db.query(Note.TABLE, null, Note.COLUMN_DELETED + " =?", new String[] { 1+"" }, null, null, null);
+        return db.query(Note.TABLE, null, Note.COLUMN_DELETED + " =?", new String[] { 1+"" }, null, null, Note.COLUMN_DATE +" DESC");
     }
 
     public Note getNote(int id) {

@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }.start();
     }
-    
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 if(tabLayout.getSelectedTabPosition() == 0) {
                     Note note = dbHelper.getNote(note_id);
                     note.setDeleted(1);
-                    dbHelper.deleteNote(note);
+                    dbHelper.toggleDeleteNote(note);
                     noteAdapter.changeCursor(dbHelper.getAllNotes());
                 } else {
                     dbHelper.permanentDeleteNote(note_id);
@@ -268,8 +268,14 @@ public class MainActivity extends AppCompatActivity {
 
             if (dbHelper.doesNoteExist(id)) {
                 note = dbHelper.getNote(id);
-                note.setText(noteText);
-                dbHelper.updateNote(note);
+                if(!note.getText().equals(noteText)) {
+                    note.setText(noteText);
+                    note.setDate_accessed(getDateTime());
+                    dbHelper.updateNote(note);
+
+                    note.setDeleted(0);
+                    dbHelper.toggleDeleteNote(note);
+                }
             } else {
                 note = new Note(noteText, getDateTime(), 0);
                 dbHelper.createNote(note);
