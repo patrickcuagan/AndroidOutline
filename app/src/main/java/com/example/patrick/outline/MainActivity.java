@@ -155,16 +155,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     etText.setText("");
-                    noteAdapter = new NoteAdapter(getBaseContext(), dbHelper.getAllNotes());
-                    noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(int id) {
-                            Intent i = new Intent(getBaseContext(), MainActivity.class);
-                            i.putExtra(Note.COLUMN_ID, id);
-                            startActivity(i);
-                        }
-                    });
-                    rvNote.setAdapter(noteAdapter);
+                    noteAdapter.changeCursor(dbHelper.getAllNotes());
                 }
             }
         });
@@ -201,17 +192,8 @@ public class MainActivity extends AppCompatActivity {
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
 
-                noteAdapter = new NoteAdapter(getBaseContext(), dbHelper.getAllNotes());
-                noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(int id) {
-                        Intent i = new Intent(getBaseContext(), MainActivity.class);
-                        i.putExtra(Note.COLUMN_ID, id);
-                        startActivity(i);
-                    }
-                });
-                rvNote.setAdapter(noteAdapter);
-
+                noteAdapter.getCursor().moveToPosition(Integer.parseInt(a.getText().toString()));
+                noteAdapter.changeCursor(dbHelper.getAllNotes());
             }
 
             @Override
@@ -231,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
         Date date = new Date();
         return dateFormat.format(date);
     }
+
 }
 
 // bugs:
