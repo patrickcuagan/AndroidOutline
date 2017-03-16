@@ -97,4 +97,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return note;
     }
+
+    public boolean doesNoteExist(int id) {
+        Note note = null;
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(Note.TABLE, null, Note.COLUMN_ID + "=?", new String[] { id + "" }, null, null, null);
+
+        if(cursor.moveToFirst()) {
+            return true;
+        }
+
+        return false;
+    }
 }

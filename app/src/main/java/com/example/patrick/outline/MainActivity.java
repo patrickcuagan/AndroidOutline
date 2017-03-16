@@ -141,15 +141,17 @@ public class MainActivity extends AppCompatActivity {
 
                 if(etText.getText().toString().trim().length() > 0) {
                     DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+                    int id = Integer.parseInt(tvId.getText().toString());
                     String noteText = etText.getText().toString();
+                    Note note;
 
-                    if(tvId.getText().toString().equals("-1")) {
-                        Note note = new Note(noteText, getDateTime());
-                        dbHelper.createNote(note);
-                    } else {
-                        Note note = dbHelper.getNote(Integer.parseInt(tvId.getText().toString()));
+                    if(dbHelper.doesNoteExist(id)) {
+                        note = dbHelper.getNote(id);
                         note.setText(noteText);
                         dbHelper.updateNote(note);
+                    } else {
+                        note = new Note(noteText, getDateTime());
+                        dbHelper.createNote(note);
                     }
 
                     etText.setText("");
@@ -199,7 +201,17 @@ public class MainActivity extends AppCompatActivity {
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
 
-                noteAdapter.notifyItemRemoved(Integer.parseInt(a.getText().toString()));
+                noteAdapter = new NoteAdapter(getBaseContext(), dbHelper.getAllNotes());
+                noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(int id) {
+                        Intent i = new Intent(getBaseContext(), MainActivity.class);
+                        i.putExtra(Note.COLUMN_ID, id);
+                        startActivity(i);
+                    }
+                });
+                rvNote.setAdapter(noteAdapter);
+
             }
 
             @Override
