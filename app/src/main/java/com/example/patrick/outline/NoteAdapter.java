@@ -33,7 +33,7 @@ public class NoteAdapter extends CursorRecyclerViewAdapter<NoteAdapter.NoteViewH
         } else {
             viewHolder.tvText.setText(text);
         }
-        viewHolder.tvDate.setText("Date created: " + note.getDate_created() + "");
+        viewHolder.tvDate.setText("Date accessed: " + note.getDate_accessed() + "");
 
         // For passing to onClickListener
         viewHolder.container.setTag(id);

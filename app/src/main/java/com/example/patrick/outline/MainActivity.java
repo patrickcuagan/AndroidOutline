@@ -1,7 +1,9 @@
 package com.example.patrick.outline;
 import android.content.Intent;
 import android.os.CountDownTimer;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,12 +13,9 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -25,6 +24,9 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
     RecyclerView rvNote;
+    ViewPager viewPager;
+    TabLayout tabLayout;
+
     NoteAdapter noteAdapter;
     DatabaseHelper dbHelper;
 
@@ -36,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
     TextView tvId;
     ImageButton ibSubmit, ibSubmitInDrawer, ibDrawer, ibCloseDrawer;
 
+    /*
+        Just to be able to close navigationview with back press on system
+     */
     @Override
     public void onBackPressed() {
         if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -49,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if(etText.getText().toString().trim().length() > 0 && !isCreated) {
-            Log.d("debug", "DESTROY");
             DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
 
             String noteText = etText.getText().toString();
@@ -59,8 +63,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // when the application is "minimized", it countdowns.. based on settings!!!!!
-    // and then save to db if ever the time passes
+    /*
+        When the application is "minimized", it starts the countdown
+        If countdown finishes, save the db if there is something in it
+        ONRESUME CANCELS COUNTDOWN!!!!
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -73,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
             public void onFinish() {
                 if(etText.getText().toString().trim().length() > 0) {
                     isCreated = true;
-                    Log.d("debug", "PAUSE");
                     DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
 
                     String noteText = etText.getText().toString();
@@ -86,8 +92,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }.start();
     }
-
-    // related to onPause --- once the application resumes, stop the timer and proceed as is
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -119,7 +124,10 @@ public class MainActivity extends AppCompatActivity {
         rvNote.setAdapter(noteAdapter);
         rvNote.setLayoutManager(new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false));
 
-        // Toggles the NavigationView Drawer
+        /*
+            Navigation view -- open close navigation view with buttons!
+                            -- if tab is notes, get all notes .. if tabs is deleted, get all deleted notes
+         */
         ibDrawer = (ImageButton) findViewById(R.id.ib_drawer);
         ibDrawer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,10 +144,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.addTab(tabLayout.newTab().setText("Notes"));
+        tabLayout.addTab(tabLayout.newTab().setText("Deleted"));
 
-        // ADD
-        // Adds a new note and creates a new activity (blank text file once again)
-        // If there is no text edited, nothing will happen (flashing of alerts = somewhat disturbing)
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if(tabLayout.getSelectedTabPosition() == 0) {
+                    // notes
+                    noteAdapter.changeCursor(dbHelper.getAllNotes());
+                } else {
+                    // deleted
+                    noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
+                }
+
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
+        /*
+            Add -- adds a new note and just sets edittext to blank and notifies (so navigationview can be updated)
+                -- better not do tell user that he cannot add empty text because might be too disturbing
+         */
         etText = (EditText) findViewById(R.id.et_text);
         tvId = (TextView) findViewById(R.id.tv_hidden_id);
 
@@ -157,11 +188,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 drawerLayout.closeDrawer(Gravity.LEFT);
                 addNote();
+                tvId.setText("-1"); // because you're adding -- reset the id to -1 again
             }
         });
 
-        // EDIT
-        // If there is an intent (one of the entered notes was clicked), display it
+        /*
+            Edit -- if there is an intent (one of the entered notes was clicked), display it and update the time
+         */
         if (getIntent().getExtras() != null) {
             int id = getIntent().getIntExtra(Note.COLUMN_ID, -1);
 
@@ -169,18 +202,22 @@ public class MainActivity extends AppCompatActivity {
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 Note note = dbHelper.getNote(id);
 
+                // set date accessed to date right now
+                note.setDate_accessed(getDateTime());
+                dbHelper.updateNote(note);
+                noteAdapter.changeCursor(dbHelper.getAllNotes());
+
                 etText.setText(note.getText());
                 tvId.setText(note.getId() + "");
             }
         }
 
-        // DELETE
+        /*
+            Delete with swipe actions!
+         */
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-
             @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
-            }
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {return false;}
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
@@ -189,20 +226,28 @@ public class MainActivity extends AppCompatActivity {
                 RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
                 TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
 
-                noteAdapter.getCursor().moveToPosition(Integer.parseInt(a.getText().toString()));
+                int note_id = Integer.parseInt(a.getText().toString());
+                noteAdapter.getCursor().moveToPosition(note_id);
 
+                /*
+                    Deleting from notes takes it to deleted tab
+                    Deleting form deleted permanently deletes note
+                 */
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
-                dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
-
-                noteAdapter.changeCursor(dbHelper.getAllNotes());
+                if(tabLayout.getSelectedTabPosition() == 0) {
+                    Note note = dbHelper.getNote(note_id);
+                    note.setDeleted(1);
+                    dbHelper.deleteNote(note);
+                    noteAdapter.changeCursor(dbHelper.getAllNotes());
+                } else {
+                    dbHelper.permanentDeleteNote(note_id);
+                    noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
+                }
             }
 
             @Override
-            public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
-                super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);
-            }
+            public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);}
         };
-
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         itemTouchHelper.attachToRecyclerView(rvNote);
     }
@@ -226,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
                 note.setText(noteText);
                 dbHelper.updateNote(note);
             } else {
-                note = new Note(noteText, getDateTime());
+                note = new Note(noteText, getDateTime(), 0);
                 dbHelper.createNote(note);
             }
 
@@ -234,8 +279,7 @@ public class MainActivity extends AppCompatActivity {
             noteAdapter.changeCursor(dbHelper.getAllNotes());
         }
     }
-
 }
 
-// bugs:
-// 1. deleting does not animate properly
+// steps
+// add note --> click drawer --> click note ---> add new note in drawer --> submit gone!

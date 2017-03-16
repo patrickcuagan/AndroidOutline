@@ -26,7 +26,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String sql = "CREATE TABLE " + Note.TABLE + "( "
                 + Note.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + Note.COLUMN_TEXT + " TEXT NOT NULL, "
-                + Note.COLUMN_DATE + " TEXT);";
+                + Note.COLUMN_DATE + " TEXT, "
+                + Note.COLUMN_DELETED + " INTEGER);";
 
         db.execSQL(sql);
     }
@@ -44,7 +45,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues cv = new ContentValues();
         cv.put(Note.COLUMN_TEXT, note.getText());
-        cv.put(Note.COLUMN_DATE, note.getDate_created());
+        cv.put(Note.COLUMN_DATE, note.getDate_accessed());
+        cv.put(Note.COLUMN_DELETED, note.getDeleted());
 
         long id = db.insert(Note.TABLE, null, cv);
         db.close();
@@ -57,6 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues cv = new ContentValues();
         cv.put(Note.COLUMN_TEXT, note.getText());
+        cv.put(Note.COLUMN_DATE, note.getDate_accessed());
 
         int rows = db.update(Note.TABLE, cv, Note.COLUMN_ID + " =?", new String[] { note.getId() + "" } );
 
@@ -65,7 +68,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rows;
     }
 
-    public int deleteNote(int id) {
+    public int deleteNote(Note note) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(Note.COLUMN_DELETED, note.getDeleted());
+
+        int rows = db.update(Note.TABLE, cv, Note.COLUMN_ID + " =?", new String[] { note.getId() + "" } );
+
+        db.close();
+
+        return rows;
+    }
+
+    public int permanentDeleteNote(int id) {
         SQLiteDatabase db = getWritableDatabase();
 
         int rows = db.delete(Note.TABLE, Note.COLUMN_ID+ "=?", new String[]{ id + "" });
@@ -75,7 +91,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getAllNotes() {
         SQLiteDatabase db = getReadableDatabase();
-        return db.query(Note.TABLE, null, null, null, null, null, null);
+        return db.query(Note.TABLE, null, Note.COLUMN_DELETED + " =?", new String[] { 0+"" }, null, null, null);
+    }
+
+    public Cursor getAllDeletedNotes() {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.query(Note.TABLE, null, Note.COLUMN_DELETED + " =?", new String[] { 1+"" }, null, null, null);
     }
 
     public Note getNote(int id) {
