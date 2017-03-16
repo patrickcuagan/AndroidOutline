@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     boolean isCreated = false;
 
     EditText etText;
+    TextView tvId;
     ImageButton ibSubmit, ibDrawer;
 
     @Override
@@ -130,19 +132,26 @@ public class MainActivity extends AppCompatActivity {
         // Adds a new note and creates a new activity (blank text file once again)
         // If there is no text edited, nothing will happen (flashing of alerts = somewhat disturbing)
         etText = (EditText) findViewById(R.id.et_text);
+        tvId = (TextView) findViewById(R.id.tv_hidden_id);
         ibSubmit = (ImageButton) findViewById(R.id.ib_submit);
 
         ibSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if(etText.getText().toString().trim().length() > 0) {
                     DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
-
                     String noteText = etText.getText().toString();
-                    Note note = new Note(noteText, getDateTime());
 
-                    dbHelper.createNote(note);
-
+                    if(tvId.getText().toString().equals("-1")) {
+                        Note note = new Note(noteText, getDateTime());
+                        dbHelper.createNote(note);
+                    } else {
+                        Note note = dbHelper.getNote(Integer.parseInt(tvId.getText().toString()));
+                        note.setText(noteText);
+                        dbHelper.updateNote(note);
+                    }
+                    
                     etText.setText("");
                     noteAdapter = new NoteAdapter(getBaseContext(), dbHelper.getAllNotes());
                     noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
@@ -154,7 +163,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     rvNote.setAdapter(noteAdapter);
-
                 }
             }
         });
@@ -169,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 Note note = dbHelper.getNote(id);
 
                 etText.setText(note.getText());
+                tvId.setText(note.getId()+"");
             }
         }
 
