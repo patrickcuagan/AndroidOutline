@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
                         note.setText(noteText);
                         dbHelper.updateNote(note);
                     }
-                    
+
                     etText.setText("");
                     noteAdapter = new NoteAdapter(getBaseContext(), dbHelper.getAllNotes());
                     noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
@@ -223,4 +223,3 @@ public class MainActivity extends AppCompatActivity {
 
 // bugs:
 // 1. deleting does not animate properly
-// 2. select icon --> adds as new instead of edit
