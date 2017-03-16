@@ -39,6 +39,7 @@
         <TextView android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="-1"
+            android:visibility="invisible"
             android:id="@+id/tv_hidden_id"
             >
 
@@ -64,10 +65,38 @@
         android:layout_gravity="start"
         android:id="@+id/nav_view">
 
-        <android.support.v7.widget.RecyclerView android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/rv_note">
-        </android.support.v7.widget.RecyclerView>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp">
+
+                <ImageButton android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/plus"
+                    android:background="#00000000"
+                    android:paddingBottom="10dp"
+                    android:id="@+id/ib_submit_in_drawer">
+
+                </ImageButton>
+
+                <ImageButton android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/back"
+                    android:background="#00000000"
+                    android:id="@+id/ib_close_drawer"
+                    android:layout_marginRight="10dp"
+                    android:layout_alignParentRight="true">
+
+                </ImageButton>
+
+                <android.support.v7.widget.RecyclerView android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/rv_note"
+                    android:layout_below="@id/ib_submit_in_drawer">
+                </android.support.v7.widget.RecyclerView>
+            </RelativeLayout>
 
     </android.support.design.widget.NavigationView>
 

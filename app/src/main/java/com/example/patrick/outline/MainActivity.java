@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     EditText etText;
     TextView tvId;
-    ImageButton ibSubmit, ibDrawer;
+    ImageButton ibSubmit, ibSubmitInDrawer, ibDrawer, ibCloseDrawer;
 
     @Override
     public void onBackPressed() {
@@ -128,49 +128,49 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ibCloseDrawer = (ImageButton) findViewById(R.id.ib_close_drawer);
+        ibCloseDrawer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.closeDrawer(Gravity.LEFT);
+            }
+        });
+
+
         // ADD
         // Adds a new note and creates a new activity (blank text file once again)
         // If there is no text edited, nothing will happen (flashing of alerts = somewhat disturbing)
         etText = (EditText) findViewById(R.id.et_text);
         tvId = (TextView) findViewById(R.id.tv_hidden_id);
-        ibSubmit = (ImageButton) findViewById(R.id.ib_submit);
 
+        ibSubmit = (ImageButton) findViewById(R.id.ib_submit);
         ibSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                addNote();
+            }
+        });
 
-                if(etText.getText().toString().trim().length() > 0) {
-                    DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
-                    int id = Integer.parseInt(tvId.getText().toString());
-                    String noteText = etText.getText().toString();
-                    Note note;
-
-                    if(dbHelper.doesNoteExist(id)) {
-                        note = dbHelper.getNote(id);
-                        note.setText(noteText);
-                        dbHelper.updateNote(note);
-                    } else {
-                        note = new Note(noteText, getDateTime());
-                        dbHelper.createNote(note);
-                    }
-
-                    etText.setText("");
-                    noteAdapter.changeCursor(dbHelper.getAllNotes());
-                }
+        ibSubmitInDrawer = (ImageButton) findViewById(R.id.ib_submit_in_drawer);
+        ibSubmitInDrawer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.closeDrawer(Gravity.LEFT);
+                addNote();
             }
         });
 
         // EDIT
         // If there is an intent (one of the entered notes was clicked), display it
-        if(getIntent().getExtras() != null) {
+        if (getIntent().getExtras() != null) {
             int id = getIntent().getIntExtra(Note.COLUMN_ID, -1);
 
-            if(id != -1) {
+            if (id != -1) {
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 Note note = dbHelper.getNote(id);
 
                 etText.setText(note.getText());
-                tvId.setText(note.getId()+"");
+                tvId.setText(note.getId() + "");
             }
         }
 
@@ -205,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         itemTouchHelper.attachToRecyclerView(rvNote);
-
     }
 
     // Get date and time in string
@@ -213,6 +212,27 @@ public class MainActivity extends AppCompatActivity {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         return dateFormat.format(date);
+    }
+
+    public void addNote() {
+        if (etText.getText().toString().trim().length() > 0) {
+            DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+            int id = Integer.parseInt(tvId.getText().toString());
+            String noteText = etText.getText().toString();
+            Note note;
+
+            if (dbHelper.doesNoteExist(id)) {
+                note = dbHelper.getNote(id);
+                note.setText(noteText);
+                dbHelper.updateNote(note);
+            } else {
+                note = new Note(noteText, getDateTime());
+                dbHelper.createNote(note);
+            }
+
+            etText.setText("");
+            noteAdapter.changeCursor(dbHelper.getAllNotes());
+        }
     }
 
 }
