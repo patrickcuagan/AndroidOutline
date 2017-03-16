@@ -189,10 +189,11 @@ public class MainActivity extends AppCompatActivity {
                 RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
                 TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
 
+                noteAdapter.getCursor().moveToPosition(Integer.parseInt(a.getText().toString()));
+
                 DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 dbHelper.deleteNote(Integer.parseInt(a.getText().toString()));
 
-                noteAdapter.getCursor().moveToPosition(Integer.parseInt(a.getText().toString()));
                 noteAdapter.changeCursor(dbHelper.getAllNotes());
             }
 
