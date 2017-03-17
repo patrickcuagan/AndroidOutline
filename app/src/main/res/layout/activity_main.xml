@@ -106,6 +106,16 @@
 
                 </android.support.v7.widget.RecyclerView>
 
+                <ImageButton android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/settings"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentBottom="true"
+                    android:id="@+id/ib_settings"
+                    android:background="#00000000">
+
+                </ImageButton>
+
             </RelativeLayout>
 
     </android.support.design.widget.NavigationView>

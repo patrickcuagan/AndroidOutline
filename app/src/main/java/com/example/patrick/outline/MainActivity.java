@@ -1,6 +1,8 @@
 package com.example.patrick.outline;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -36,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     EditText etText;
     TextView tvId;
-    ImageButton ibSubmit, ibSubmitInDrawer, ibDrawer, ibCloseDrawer;
+    ImageButton ibSubmit, ibSubmitInDrawer, ibDrawer, ibCloseDrawer, ibSettings;
 
     /*
         Just to be able to close navigationview with back press on system
@@ -72,25 +74,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        timer = new CountDownTimer(5000, 1000) {
-            public void onTick(long millisUntilFinished) {
-                isRunning = true;
-            }
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        int timeToRefresh = sp.getInt("timeToRefresh", -1);
 
-            public void onFinish() {
-                if(etText.getText().toString().trim().length() > 0) {
-                    isCreated = true;
-                    DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
-
-                    String noteText = etText.getText().toString();
-                    Note note = new Note(noteText, getDateTime());
-
-                    dbHelper.createNote(note);
-
-                    finish();
+        if(timeToRefresh != -2) {
+            timer = new CountDownTimer(timeToRefresh, 1000) {
+                public void onTick(long millisUntilFinished) {
+                    isRunning = true;
                 }
-            }
-        }.start();
+
+                public void onFinish() {
+                    if(etText.getText().toString().trim().length() > 0) {
+                        isCreated = true;
+                        DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+
+                        String noteText = etText.getText().toString();
+                        Note note = new Note(noteText, getDateTime());
+
+                        dbHelper.createNote(note);
+
+                        etText.setText("");
+                        noteAdapter.changeCursor(dbHelper.getAllNotes());
+                    }
+                }
+            }.start();
+        }
     }
 
     @Override
@@ -250,6 +258,18 @@ public class MainActivity extends AppCompatActivity {
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         itemTouchHelper.attachToRecyclerView(rvNote);
+
+        /*
+            Toggle settings
+         */
+        ibSettings = (ImageButton) findViewById(R.id.ib_settings);
+        ibSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getBaseContext(), SettingsActivity.class);
+                startActivity(i);
+            }
+        });
     }
 
     // Get date and time in string
