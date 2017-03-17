@@ -60,6 +60,16 @@
 
         </EditText>
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/camera"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="20dp"
+            android:layout_marginRight="20dp"/>
+
     </RelativeLayout>
 
     <android.support.design.widget.NavigationView android:layout_width="wrap_content"
@@ -125,8 +135,5 @@
             </RelativeLayout>
 
     </android.support.design.widget.NavigationView>
-
-
-
 
 </android.support.v4.widget.DrawerLayout>

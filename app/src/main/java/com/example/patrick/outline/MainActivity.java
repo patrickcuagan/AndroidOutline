@@ -1,8 +1,13 @@
 package com.example.patrick.outline;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -39,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     EditText etText;
     TextView tvId;
     ImageButton ibSubmit, ibSubmitInDrawer, ibDrawer, ibCloseDrawer, ibSettings;
+
+    FloatingActionButton fabCamera;
 
     /*
         Just to be able to close navigationview with back press on system
@@ -247,9 +254,13 @@ public class MainActivity extends AppCompatActivity {
                     note.setDeleted(1);
                     dbHelper.toggleDeleteNote(note);
                     noteAdapter.changeCursor(dbHelper.getAllNotes());
+                    Snackbar.make(rvNote, "Note moved to delete pane.", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 } else {
                     dbHelper.permanentDeleteNote(note_id);
                     noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
+                    Snackbar.make(rvNote, "Note deleted permanently.", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 }
             }
 
@@ -268,6 +279,17 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent i = new Intent(getBaseContext(), SettingsActivity.class);
                 startActivity(i);
+            }
+        });
+
+        /*
+            Camera Action
+         */
+        fabCamera = (FloatingActionButton) findViewById(R.id.fab);
+        fabCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
             }
         });
     }
