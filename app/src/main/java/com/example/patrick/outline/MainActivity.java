@@ -289,7 +289,8 @@ public class MainActivity extends AppCompatActivity {
         fabCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent i = new Intent(getBaseContext(), CameraActivity.class);
+                startActivity(i);
             }
         });
     }
