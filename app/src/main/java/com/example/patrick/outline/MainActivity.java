@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if(tabLayout.getSelectedTabPosition() == 0) {
+                if (tabLayout.getSelectedTabPosition() == 0) {
                     // notes
                     noteAdapter.changeCursor(dbHelper.getAllNotes());
                 } else {
@@ -182,9 +182,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
         });
 
         /*
@@ -238,8 +241,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
             @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {return false;}
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
 
             public void onChildDraw(Canvas c, RecyclerView recyclerView,
                                     RecyclerView.ViewHolder viewHolder, float dX, float dY,
@@ -256,77 +262,113 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                int position = viewHolder.getAdapterPosition();
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
 
-                RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
-                TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
+                final int position = viewHolder.getAdapterPosition();
 
-                int note_id = Integer.parseInt(a.getText().toString());
-                noteAdapter.getCursor().moveToPosition(note_id);
+                if (direction == ItemTouchHelper.RIGHT) {    //if swipe left
 
-                 //   Deleting from notes takes it to deleted tab
-                 //   Deleting form deleted permanently deletes note
+                    // alert for confirm to delete 
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
-                final DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
-                if(tabLayout.getSelectedTabPosition() == 0) {
-                    final Note note = dbHelper.getNote(note_id);
-                    note.setDeleted(1);
-                    dbHelper.toggleDeleteNote(note);
-                    final Cursor oldCursor = noteAdapter.swapCursor(dbHelper.getAllNotes());
-                    Snackbar.make(rvNote,"Note moved to delete pane.", Snackbar.LENGTH_LONG).
-                            setAction("Undo", new View.OnClickListener() {
+                    // set message  
+                    builder.setMessage("Are you sure to delete?");
+                    builder.setPositiveButton("REMOVE", new DialogInterface.OnClickListener() {
 
-                                @Override
-                                public void onClick(View v) {
-                                    note.setDeleted(0);
-                                    dbHelper.toggleDeleteNote(note);
-                                    noteAdapter.changeCursor(oldCursor);
-                                    noteAdapter.notifyDataSetChanged();
-                                }
+                        // when click on DELETE
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
 
-                            }).show();
-                } else {
-                    dbHelper.permanentDeleteNote(note_id);
-                    noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
-                    Snackbar.make(rvNote, "Note deleted permanently.", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
+                            RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
+                            TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
+
+                            int note_id = Integer.parseInt(a.getText().toString());
+                            noteAdapter.getCursor().moveToPosition(note_id);
+
+                            //   Deleting from notes takes it to deleted tab
+                            //   Deleting form deleted permanently deletes note
+
+                            final DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+                            if (tabLayout.getSelectedTabPosition() == 0) {
+                                final Note note = dbHelper.getNote(note_id);
+                                note.setDeleted(1);
+                                dbHelper.toggleDeleteNote(note);
+                                final Cursor oldCursor = noteAdapter.swapCursor(dbHelper.getAllNotes());
+                                Snackbar.make(rvNote, "Note moved to delete pane.", Snackbar.LENGTH_LONG).
+                                        setAction("Undo", new View.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(View v) {
+                                                note.setDeleted(0);
+                                                dbHelper.toggleDeleteNote(note);
+                                                noteAdapter.changeCursor(oldCursor);
+                                                noteAdapter.notifyDataSetChanged();
+                                            }
+
+                                        }).show();
+                            } else {
+                                dbHelper.permanentDeleteNote(note_id);
+                                noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
+                                Snackbar.make(rvNote, "Note deleted permanently.", Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                            }
+                        }
+                    }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (tabLayout.getSelectedTabPosition() == 0) {
+                                noteAdapter.changeCursor(dbHelper.getAllNotes());
+                            } else {
+                                noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
+                            }
+                            return;
+                        }
+                    }).show();  // show alert dialog
                 }
             }
-
-            @Override
-            public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);}
         };
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-        itemTouchHelper.attachToRecyclerView(rvNote);
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+            itemTouchHelper.attachToRecyclerView(rvNote);
 
-        /*
-            Toggle settings
-         */
-        ibSettings = (ImageButton) findViewById(R.id.ib_settings);
-        ibSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), SettingsActivity.class);
-                startActivity(i);
-            }
-        });
+            // Toggle settings
 
-        /*
-            Camera Action
-         */
-        fabCamera = (FloatingActionButton) findViewById(R.id.fab);
-        fabCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+            ibSettings=(ImageButton)
+
+            findViewById(R.id.ib_settings);
+
+            ibSettings.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick (View v){
+                    Intent i = new Intent(getBaseContext(), SettingsActivity.class);
+                    startActivity(i);
+                }
+            });
+
+                /*
+                    Camera Action
+                 */
+            fabCamera=(FloatingActionButton)
+
+            findViewById(R.id.fab);
+
+            fabCamera.setOnClickListener(new View.OnClickListener()
+
+            {
+                @Override
+                public void onClick (View view){
                 Intent i = new Intent(getBaseContext(), CameraActivity.class);
                 startActivity(i);
             }
-        });
-    }
+            }
 
-    // Get date and time in string
+            );
+        }
+
+        // Get date and time in string
+
+
+
     private String getDateTime() {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
@@ -342,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (dbHelper.doesNoteExist(id)) {
                 note = dbHelper.getNote(id);
-                if(!note.getText().equals(noteText) && note.getDeleted() != 1) {
+                if (!note.getText().equals(noteText) && note.getDeleted() != 1) {
                     note.setText(noteText);
                     note.setDate_accessed(getDateTime());
                     dbHelper.updateNote(note);
@@ -359,6 +401,7 @@ public class MainActivity extends AppCompatActivity {
             noteAdapter.changeCursor(dbHelper.getAllNotes());
         }
     }
+
 }
 
 // steps
