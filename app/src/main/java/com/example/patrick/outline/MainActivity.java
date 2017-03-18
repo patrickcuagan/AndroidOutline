@@ -1,5 +1,6 @@
 package com.example.patrick.outline;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -12,6 +13,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -235,32 +237,53 @@ public class MainActivity extends AppCompatActivity {
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {return false;}
 
             @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                int position = viewHolder.getAdapterPosition();
+            public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
+                final int position = viewHolder.getAdapterPosition(); //get position which is swipe
 
-                RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
-                TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
+                if (direction == ItemTouchHelper.RIGHT) {    //if swipe left
 
-                int note_id = Integer.parseInt(a.getText().toString());
-                noteAdapter.getCursor().moveToPosition(note_id);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this); //alert for confirm to delete
+                    builder.setMessage("Are you sure to delete?");    //set message
 
-                /*
-                    Deleting from notes takes it to deleted tab
-                    Deleting form deleted permanently deletes note
-                 */
-                DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
-                if(tabLayout.getSelectedTabPosition() == 0) {
-                    Note note = dbHelper.getNote(note_id);
-                    note.setDeleted(1);
-                    dbHelper.toggleDeleteNote(note);
-                    noteAdapter.changeCursor(dbHelper.getAllNotes());
-                    Snackbar.make(rvNote, "Note moved to delete pane.", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                } else {
-                    dbHelper.permanentDeleteNote(note_id);
-                    noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
-                    Snackbar.make(rvNote, "Note deleted permanently.", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
+                    builder.setPositiveButton("REMOVE", new DialogInterface.OnClickListener() { //when click on DELETE
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            RecyclerView.ViewHolder view = rvNote.findViewHolderForLayoutPosition(position);
+                            TextView a = (TextView) view.itemView.findViewById(R.id.tv_id);
+
+                            int note_id = Integer.parseInt(a.getText().toString());
+                            noteAdapter.getCursor().moveToPosition(note_id);
+
+                            /*
+                                Deleting from notes takes it to deleted tab
+                                Deleting form deleted permanently deletes note
+                             */
+                            DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+                            if(tabLayout.getSelectedTabPosition() == 0) {
+                                Note note = dbHelper.getNote(note_id);
+                                note.setDeleted(1);
+                                dbHelper.toggleDeleteNote(note);
+                                noteAdapter.changeCursor(dbHelper.getAllNotes());
+                                Snackbar.make(rvNote, "Note moved to delete pane.", Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                            } else {
+                                dbHelper.permanentDeleteNote(note_id);
+                                noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
+                                Snackbar.make(rvNote, "Note deleted permanently.", Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                            }
+                        }
+                    }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if(tabLayout.getSelectedTabPosition() == 0) {
+                                noteAdapter.changeCursor(dbHelper.getAllNotes());
+                            } else {
+                                noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
+                            }
+                            return;
+                        }
+                    }).show();  //show alert dialog
                 }
             }
 
@@ -311,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (dbHelper.doesNoteExist(id)) {
                 note = dbHelper.getNote(id);
-                if(!note.getText().equals(noteText)) {
+                if(!note.getText().equals(noteText) && note.getDeleted() != 1) {
                     note.setText(noteText);
                     note.setDate_accessed(getDateTime());
                     dbHelper.updateNote(note);
