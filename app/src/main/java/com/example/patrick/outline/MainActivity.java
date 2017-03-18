@@ -3,6 +3,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -23,6 +25,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -230,9 +233,25 @@ public class MainActivity extends AppCompatActivity {
         /*
             Delete with swipe actions!
          */
+
+
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {return false;}
+
+            public void onChildDraw(Canvas c, RecyclerView recyclerView,
+                                    RecyclerView.ViewHolder viewHolder, float dX, float dY,
+                                    int actionState, boolean isCurrentlyActive) {
+
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    //HERE IS THE TRICK
+                    viewHolder.itemView.setTranslationX(dX);
+
+                } else {
+                    super.onChildDraw(c, recyclerView, viewHolder, dX, dY,
+                            actionState, isCurrentlyActive);
+                }
+            }
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
@@ -244,18 +263,27 @@ public class MainActivity extends AppCompatActivity {
                 int note_id = Integer.parseInt(a.getText().toString());
                 noteAdapter.getCursor().moveToPosition(note_id);
 
-                /*
-                    Deleting from notes takes it to deleted tab
-                    Deleting form deleted permanently deletes note
-                 */
-                DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
+                 //   Deleting from notes takes it to deleted tab
+                 //   Deleting form deleted permanently deletes note
+
+                final DatabaseHelper dbHelper = new DatabaseHelper(getBaseContext());
                 if(tabLayout.getSelectedTabPosition() == 0) {
-                    Note note = dbHelper.getNote(note_id);
+                    final Note note = dbHelper.getNote(note_id);
                     note.setDeleted(1);
                     dbHelper.toggleDeleteNote(note);
-                    noteAdapter.changeCursor(dbHelper.getAllNotes());
-                    Snackbar.make(rvNote, "Note moved to delete pane.", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
+                    final Cursor oldCursor = noteAdapter.swapCursor(dbHelper.getAllNotes());
+                    Snackbar.make(rvNote,"Note moved to delete pane.", Snackbar.LENGTH_LONG).
+                            setAction("Undo", new View.OnClickListener() {
+
+                                @Override
+                                public void onClick(View v) {
+                                    note.setDeleted(0);
+                                    dbHelper.toggleDeleteNote(note);
+                                    noteAdapter.changeCursor(oldCursor);
+                                    noteAdapter.notifyDataSetChanged();
+                                }
+
+                            }).show();
                 } else {
                     dbHelper.permanentDeleteNote(note_id);
                     noteAdapter.changeCursor(dbHelper.getAllDeletedNotes());
@@ -267,6 +295,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);}
         };
+
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         itemTouchHelper.attachToRecyclerView(rvNote);
 
