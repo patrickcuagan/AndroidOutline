@@ -1,5 +1,6 @@
 package com.example.patrick.outline;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,6 +15,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -340,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (dbHelper.doesNoteExist(id)) {
                 note = dbHelper.getNote(id);
-                if(!note.getText().equals(noteText)) {
+                if(!note.getText().equals(noteText) && note.getDeleted() != 1) {
                     note.setText(noteText);
                     note.setDate_accessed(getDateTime());
                     dbHelper.updateNote(note);
