@@ -4,9 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.patrick.outline.MainActivity"
+    tools:context="mobapde.edu.practice.androidoutlinetry.MainActivity"
     android:id="@+id/drawer_layout">
-
 
     <RelativeLayout android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -33,7 +32,14 @@
                 android:src="@drawable/plus"
                 android:background="#00000000"
                 android:id="@+id/ib_submit">
+            </ImageButton>
 
+            <ImageButton android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/settings"
+                android:background="#00000000"
+                android:layout_marginLeft="10dp"
+                android:id="@+id/ib_settings">
             </ImageButton>
         </LinearLayout>
 
@@ -77,62 +83,61 @@
         android:layout_gravity="start"
         android:id="@+id/nav_view">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingTop="10dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
 
-                <RelativeLayout android:layout_width="match_parent"
+            <RelativeLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/status_bar"
+                android:background="@drawable/borderframe"
+                >
+                <ImageButton android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/status_bar"
-                    android:background="@drawable/borderframe"
-                    >
-                    <ImageButton android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/plus"
-                        android:background="#00000000"
-                        android:paddingBottom="10dp"
-                        android:id="@+id/ib_submit_in_drawer">
-                    </ImageButton>
-
-                    <ImageButton android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/back"
-                        android:background="#00000000"
-                        android:id="@+id/ib_close_drawer"
-                        android:layout_marginRight="10dp"
-                        android:layout_alignParentRight="true">
-                    </ImageButton>
-                </RelativeLayout>
-
-                <android.support.design.widget.TabLayout
-                    android:id="@+id/tabs"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/status_bar"
-                    app:tabMode="fixed"
-                    app:tabGravity="fill" />
-
-                <android.support.v7.widget.RecyclerView android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/tabs"
-                    android:id="@+id/rv_note">
-
-                </android.support.v7.widget.RecyclerView>
+                    android:src="@drawable/plus"
+                    android:background="#00000000"
+                    android:paddingBottom="10dp"
+                    android:id="@+id/ib_submit_in_drawer">
+                </ImageButton>
 
                 <ImageButton android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/settings"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentBottom="true"
-                    android:id="@+id/ib_settings"
-                    android:background="#00000000">
-
+                    android:src="@drawable/back"
+                    android:background="#00000000"
+                    android:id="@+id/ib_close_drawer"
+                    android:layout_marginRight="10dp"
+                    android:layout_alignParentRight="true">
                 </ImageButton>
-
             </RelativeLayout>
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/status_bar"
+                app:tabMode="fixed"
+                app:tabGravity="fill" />
+
+            <android.support.v7.widget.RecyclerView android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/tabs"
+                android:id="@+id/rv_note">
+
+            </android.support.v7.widget.RecyclerView>
+
+            <ImageButton android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/settings"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:id="@+id/ib_settings2"
+                android:background="#00000000">
+            </ImageButton>
+
+        </RelativeLayout>
 
     </android.support.design.widget.NavigationView>
 
