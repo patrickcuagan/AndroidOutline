@@ -5,7 +5,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -26,6 +29,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,10 +42,17 @@ import com.twitter.sdk.android.core.TwitterAuthConfig;
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
-    //BINAGO KO 2 LINES BELOW //
-   private static final String TWITTER_KEY = "wlfGE1ohYo8vbDTwRSt2oJC1C";
+
+    // KEYS
+
+    static final int PICTURE_TAKEN = 1;
+    private static final String TWITTER_KEY = "wlfGE1ohYo8vbDTwRSt2oJC1C";
     private static final String TWITTER_SECRET = "ulJ6BbYBvbIq7eVYsNzV6iE1RnFSdzOvhOMqLTMkGqYlXAkdAt";
+
+    // ELEMENTS
+
     DrawerLayout drawerLayout;
+    RelativeLayout rlMain;
     RecyclerView rvNote;
     ViewPager viewPager;
     TabLayout tabLayout;
@@ -58,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton fabCamera;
 
+    ImageView ivImage;
+
     /*
         Just to be able to close navigationview with back press on system
      */
@@ -67,6 +81,44 @@ public class MainActivity extends AppCompatActivity {
             this.drawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+        }
+    }
+
+    /*
+        For the image is taken;
+     */
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == PICTURE_TAKEN && resultCode == RESULT_OK){
+
+            String imagePath = data.getStringExtra("imagePath");
+
+            if(!imagePath.equals("-1")) {
+                Image image = new Image(1, data.getStringExtra("imagePath"));
+                dbHelper.createImage(image);
+
+                // Get path of image
+                Log.d("Main", imagePath);
+
+                // Drawable drawable = Drawable.createFromPath("/storage/emulated/0/pic.jpg");
+                Drawable drawable = Drawable.createFromPath(imagePath);
+                ivImage = (ImageView) findViewById(R.id.iv_image);
+                ivImage.setImageDrawable(drawable);
+
+                /*
+                // Create image bitmap
+                Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+
+                ImageView view = new ImageView(getBaseContext());
+                RelativeLayout.LayoutParams lp =
+                        new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                                                            RelativeLayout.LayoutParams.WRAP_CONTENT);
+                rlMain.addView(view, lp);
+                */
+            }
         }
     }
 
@@ -135,6 +187,11 @@ public class MainActivity extends AppCompatActivity {
         Fabric.with(this, new Twitter(authConfig));
         setContentView(R.layout.activity_main);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        rlMain = (RelativeLayout) findViewById(R.id.rl_main);
+
+        Drawable drawable = Drawable.createFromPath("/storage/emulated/0/pic.jpg");
+        ivImage = (ImageView) findViewById(R.id.iv_image);
+        ivImage.setImageDrawable(drawable);
 
         rvNote = (RecyclerView) findViewById(R.id.rv_note);
         dbHelper = new DatabaseHelper(getBaseContext());
@@ -386,8 +443,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Get date and time in string
-
-
 
     private String getDateTime() {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");

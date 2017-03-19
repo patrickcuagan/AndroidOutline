@@ -23,6 +23,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // if db exists, do nothing
         // create tables here
 
+        // Note
         String sql = "CREATE TABLE " + Note.TABLE + "( "
                 + Note.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + Note.COLUMN_TEXT + " TEXT NOT NULL, "
@@ -30,11 +31,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + Note.COLUMN_DELETED + " INTEGER);";
 
         db.execSQL(sql);
+
+        // Image
+
+        sql = "CREATE TABLE " + Image.TABLE + "( "
+                + Image.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + Image.COLUMN_IDNOTE + " INTEGER, "
+                + Image.COLUMN_PATH + " TEXT NOT NULL) ";
+
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         String sql = "DROP TABLE IF EXISTS " + Note.TABLE;
+        db.execSQL(sql);
+
+        sql = "DROP TABLE IF EXISTS " + Image.TABLE;
         db.execSQL(sql);
 
         onCreate(db);
@@ -130,5 +142,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return false;
+    }
+
+    public long createImage(Image image) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(Image.COLUMN_IDNOTE, image.getIdNote());
+        cv.put(Image.COLUMN_PATH, image.getImagePath());
+
+        long id = db.insert(Image.TABLE, null, cv);
+        db.close();
+
+        return id;
+    }
+
+    public int deleteImage(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        int rows = db.delete(Image.TABLE, Image.COLUMN_ID+ "=?", new String[]{ id + "" });
+        db.close();
+        return rows;
+    }
+
+    public Cursor getAllImagesInNote(int idNote) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.query(Note.TABLE, null, Image.COLUMN_IDNOTE + " =?", new String[] { idNote+"" }, null, null, null);
     }
 }

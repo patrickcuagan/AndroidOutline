@@ -1,6 +1,7 @@
 package com.example.patrick.outline;
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Camera;
 import android.graphics.ImageFormat;
@@ -46,12 +47,14 @@ public class CameraActivity extends AppCompatActivity {
     private Button takePictureButton;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
+
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
     private String cameraId;
     protected CameraDevice cameraDevice;
     protected CameraCaptureSession cameraCaptureSessions;
@@ -253,10 +256,17 @@ public class CameraActivity extends AppCompatActivity {
                                                            CaptureRequest request,
                                                            TotalCaptureResult result) {
                                 super.onCaptureCompleted(session, request, result);
+
+                                Log.d("Saved", file.getPath());
+
                                 Toast.makeText(CameraActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
                                 createCameraPreview();
 
                                 // Add intent here to link back to Main Activity
+                                Intent i = new Intent(getBaseContext(), MainActivity.class);
+                                i.putExtra("imagePath", file.getPath());
+                                startActivityForResult(i, MainActivity.PICTURE_TAKEN);
+
                             }
 
                 };
