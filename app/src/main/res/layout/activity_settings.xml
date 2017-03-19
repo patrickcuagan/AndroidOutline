@@ -3,27 +3,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp">
+    android:paddingBottom="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="16dp"
+    tools:context="mobapde.edu.practice.androidoutlinetry.SettingsActivity">
 
-    <TextView
-        android:id="@+id/tv_settings"
-        android:layout_width="match_parent"
+    <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Settings"
-        android:layout_centerHorizontal="true"
-        android:textStyle="bold"
-        android:textSize="18dp">
-    </TextView>
+        android:orientation="horizontal"
+        android:id="@+id/ll_status"
+        android:padding="10dp"
+        android:background="@drawable/borderframe">
+        <TextView
+            android:id="@+id/tv_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:layout_centerHorizontal="true"
+            android:textStyle="bold"
+            android:textSize="15dp">
+        </TextView>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Create new draft when returning after.."
-        android:layout_below="@id/tv_settings"
         android:textStyle="bold"
-        android:layout_marginTop="10dp"
-        android:textSize="20dp"/>
+        android:layout_marginTop="50dp"
+        android:textSize="15dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,21 +46,24 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="11dp"
-            android:text="30 seconds"/>
+            android:textSize="8dp"
+            android:onClick="set"
+            android:text="30 seconds"></Button>
         <Button
             android:id="@+id/btn_1m"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="11dp"
+            android:textSize="8dp"
+            android:onClick="set"
             android:text="1 minute"/>
         <Button
             android:id="@+id/btn_5m"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="11dp"
+            android:textSize="8dp"
+            android:onClick="set"
             android:text="5 minutes"/>
 
         <Button
@@ -58,7 +71,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="11dp"
+            android:textSize="8dp"
+            android:onClick="set"
             android:text="never"/>
     </LinearLayout>
 
@@ -114,6 +128,13 @@
         android:layout_marginTop="20dp"
         android:layout_alignParentStart="true"
         android:textSize="20dp"/>
+
+    <com.twitter.sdk.android.core.identity.TwitterLoginButton
+        android:id="@+id/twitter_login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_keyboard"
+        android:layout_marginTop="20dp"/>
 
     <Button
         android:layout_width="wrap_content"
